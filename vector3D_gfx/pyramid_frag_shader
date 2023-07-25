@@ -1,0 +1,48 @@
+#version 330 core
+
+out vec4 aColor;
+
+in vec3 oNorm;
+in vec3 fragPos;
+
+uniform vec4 color;
+uniform vec4 ambient_light;
+uniform vec3 cam_pos;
+
+float shine = 8;
+
+struct point_light {
+  vec3 pos;
+  float strength;
+  vec3 color;
+};
+
+uniform point_light lights[3];
+uniform int point_light_count;
+
+vec4 apply_point_lights(vec4 ambient, vec3 normal) {
+  vec4 diffuse = ambient;
+  vec4 specular = ambient;
+
+  for (int i = 0; i < point_light_count; ++i) {
+    // diffuse lighting
+    vec3 light_direction = normalize(lights[i].pos - fragPos);
+    float diff = max(dot(normal, light_direction), 0.0f);
+    diffuse += vec4(diff * lights[i].strength * lights[i].color, 0.0f);
+
+    // specular lighting
+    vec3 view_direction = normalize(cam_pos - fragPos);
+    vec3 reflect_direction = reflect(-light_direction, oNorm);
+    float spec = pow(max(dot(view_direction, reflect_direction), 0.0), shine);
+    specular += vec4(spec * 0.5f * lights[i].color, 0.0f);
+  }
+
+  return diffuse + specular; 
+}
+
+void main(){
+  
+  vec4 point_light_col = apply_point_lights(ambient_light, oNorm);
+
+  aColor = color * point_light_col;
+}

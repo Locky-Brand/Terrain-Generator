@@ -1,0 +1,23 @@
+#version 330 core
+layout(location = 0) in vec3 aPos;
+layout(location = 1) in vec4 aColor;
+layout(location = 2) in vec3 aNorm;
+
+out vec3 oNorm;
+out vec3 fragPos;
+out vec4 oColor;
+
+uniform mat4 scalor;
+uniform mat4 rotator;
+uniform mat4 translator;
+
+uniform mat4 view;
+uniform mat4 proj;
+
+void main(){
+  oNorm = aNorm;
+  oColor = aColor;
+  mat4 model = translator * rotator * scalor;
+  fragPos = vec3(model * vec4(aPos, 1.0f));
+  gl_Position = proj * view * model * vec4(aPos, 1.0f);
+}
